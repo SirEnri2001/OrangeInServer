@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>File Upload</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+</head>
+<body>
+<div class="row">
+    <div class="col-lg-3"></div>
+    <div class="col-lg-6">
+        <h1 class="text-center">File Upload</h1>
+        <div class="col-lg-3"></div>
+    </div>
+</div>
+
+<form class="form-horizontal" role="form">
+    <div class="row form-group">
+        <div class="col-lg-4"></div>
+        <div class="col-lg-1">
+            <label for="local_file">Select Local File:</label>
+        </div>
+        <div class="btn-group-vertical col-lg-3">
+            <input type="file" id="local_file" class="form-control">
+        </div>
+        <div class="col-lg-4"></div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-4"></div>
+        <button type="button" class="col-lg-4 btn btn-default" onclick="onUpload()">Upload</button>
+        <div class="col-lg-4"></div>
+    </div>
+</form>
+<script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+<script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script>
+    $(document).ready(function () {
+    });
+
+    function onUpload() {
+
+        var files = $('#local_file').prop('files');
+        var data = new FormData();
+        data.append('file', files[0]);
+
+        $.ajax({
+            type: 'POST',
+            url: "/upload",
+            data: data,
+            cache: false,
+            processData: false,
+            contentType: false,
+            success: function (ret) {
+                alert(ret);
+            }
+        });
+
+    }
+</script>
+</body>
+</html>
+
