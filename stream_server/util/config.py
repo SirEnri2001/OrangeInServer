@@ -1,12 +1,12 @@
 import os
 
-file_path = r"/home/Deployment/audio"
+file_path = r"C:\Users\Vlair\PycharmProjects\OrangeInServer\stream_server\audio"
 
 media_server = "101.34.57.237"
 
 
 def streaming_cmd(filename):
-    return _streaming_cmd_linux(filename)
+    return _streaming_cmd_win(filename)
 
 
 def _streaming_cmd_linux(filename):

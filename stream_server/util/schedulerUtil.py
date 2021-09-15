@@ -1,16 +1,10 @@
 import os
 
-import apscheduler.jobstores.base
-import pytz
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.executors.pool import ThreadPoolExecutor, ProcessPoolExecutor
-from apscheduler.schedulers.blocking import BlockingScheduler
-from apscheduler.triggers.interval import IntervalTrigger
-from datetime import datetime,timedelta
 
-import util.audio
-from database import schemas
+from . import audio
 
 jobstores = {
     'default': SQLAlchemyJobStore(url='sqlite:///jobs.sqlite')
@@ -38,7 +32,7 @@ class ArrangementScheduler:
 
     def add_job(self,filename,timestamp):
         print("filename:"+filename+" datetime:"+timestamp.__str__())
-        self.scheduler.add_job(util.audio.play_audio_blocked,"date",
+        self.scheduler.add_job(audio.play_audio_blocked,"date",
                                run_date=timestamp,args=[filename])
 
 

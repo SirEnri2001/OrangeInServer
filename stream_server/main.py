@@ -21,12 +21,12 @@ from starlette.responses import FileResponse
 # 新数据库ORM
 from sqlalchemy.orm import Session
 
-import util.audio
-from database import crud, models, schemas
-from database import engine, get_db
-from util.schedulerUtil import sche
+from .database import crud, models, schemas
+from .database import engine, get_db
+from .util.schedulerUtil import sche
 
-from util.config import file_path
+from .util.config import file_path
+from .util.audio import *
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -52,7 +52,7 @@ template.env.filters['localize'] = localize
 app.mount("/static", StaticFiles(directory="./html/templates"), name="static")
 # app.mount("/audio", StaticFiles(directory="./audio"), name="static")
 
-mute_process = util.audio.MuteProcess()
+mute_process = MuteProcess()
 
 
 class LoginAuth(BaseModel):
@@ -203,7 +203,7 @@ async def file_upload_post(file: UploadFile = File(...), db: Session = Depends(g
     if file.content_type.find("audio") == -1 and file.content_type.find("video") == -1:
         raise HTTPException(status_code=400, detail="Invalid filetype")
     content = await file.read()
-    with open(os.path.join(util.config.file_path, file.filename), "wb") as f:
+    with open(os.path.join(file_path, file.filename), "wb") as f:
         f.write(content)
     crud.create_file(db, schemas.FileCreate(
         filename=file.filename,
@@ -217,7 +217,7 @@ async def play_audio(file: schemas.FilePlay, db: Session = Depends(get_db)):
     if crud.get_file_by_name(db=db, filename=file.filename) is None:
         raise HTTPException(status_code=400)
     try:
-        async_play_thread = util.audio.AudioProcess(filename=os.path.join(file_path, file.filename))
+        async_play_thread = AudioProcess(filename=os.path.join(file_path, file.filename))
         async_play_thread.run()
     except:
         print("Error: unable to start thread")
@@ -226,8 +226,8 @@ async def play_audio(file: schemas.FilePlay, db: Session = Depends(get_db)):
 @app.post("/system/start_stream")
 async def start_stream():
     try:
-        util.audio.MuteProcess.set_mutefile("MuteSound.mp3")
-        threading.Thread(target=util.audio.MuteProcess.run).start()
+        MuteProcess.set_mutefile("MuteSound.mp3")
+        threading.Thread(target=MuteProcess.run).start()
     except:
         traceback.print_exc()
 
@@ -388,7 +388,7 @@ def system_stop_audio():
         sche.scheduler.shutdown()
     except SchedulerNotRunningError:
         print("Already not running")
-    util.audio.AudioProcess.stop_all()
+    AudioProcess.stop_all()
 
 
 @app.get("/stream")
@@ -409,7 +409,7 @@ def send_file(filename: str, db: Session = Depends(get_db)):
 @app.post("/remote/play/{filename}")
 def remote_play_command(filename:str):
     print("remote play command received:"+filename)
-    audio = util.audio.AudioProcess(os.path.join(util.config.file_path,filename))
+    audio = AudioProcess(os.path.join(file_path,filename))
     threading.Thread(target=audio.run).start()
 
 
@@ -427,7 +427,7 @@ def remote_find_file(filename:str):
 async def file_upload_post(file: UploadFile = File(...)):
     try:
         content = await file.read()
-        with open(os.path.join(util.config.file_path, file.filename), "wb") as f:
+        with open(os.path.join(file_path, file.filename), "wb") as f:
             f.write(content)
     except Exception:
         traceback.print_exc()

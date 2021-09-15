@@ -1,13 +1,8 @@
-import asyncio
 import os
-import random
 import re
 import subprocess
 import sys
-import threading
-import time
 import uuid
-import random
 from subprocess import *
 
 import requests
@@ -17,9 +12,8 @@ from xml.etree import ElementTree
 from pydub import AudioSegment
 import wave
 
-from util.config import file_path, streaming_cmd
-from util.thread_ctrl import *
-import util.schedulerUtil
+from .config import *
+from .thread_ctrl import *
 
 subp = None
 
@@ -43,10 +37,10 @@ def get_audio_duration(filename):
 
 
 def play_audio_blocked(filename):
-    url = util.config.media_server
+    url = media_server
     res = requests.get(url + "/remote/find?" + filename)
     if res.status_code == 404:
-        files = {'file': open(os.path.join(util.config.file_path,filename), 'rb')}
+        files = {'file': open(os.path.join(file_path,filename), 'rb')}
         try:
             r = requests.post(url=url+"/remote/upload", files=files).text
             if r is not None:
@@ -75,10 +69,10 @@ class AudioProcess:
         print("audio_entry acquired by audio")
         block_silence.set()
         print("event set by audio")
-        audio_thread_mutex.acquire()
-        print("audio_thread acquired by audio")
         block_silence_mutex.release()
         print("block_silence released by audio")
+        audio_thread_mutex.acquire()
+        print("audio_thread acquired by audio")
         audio_entry_mutex.release()
         print("audio_entry released by audio")
         if subp is not None:
@@ -87,12 +81,12 @@ class AudioProcess:
         print("audio process created")
         tlist.append(asubp)
         asubp.communicate()
-        audio_thread_mutex.release()
-        print("audio_thread released by audio")
         block_silence_mutex.acquire()
         print("block_silence acquired by audio")
         block_silence.clear()
         print("event clear")
+        audio_thread_mutex.release()
+        print("audio_thread released by audio")
         block_silence_mutex.release()
         print("block_silence released by audio")
         tlist.remove(asubp)
@@ -112,12 +106,14 @@ class AudioProcess:
 
 
 class MuteProcess:
-    filename = "MuteSound.mp3"
+    filename = "123.m4a"
+    duration = get_audio_duration(filename)
     subp = None
 
     @classmethod
     def set_mutefile(cls, filename):
         cls.filename = filename
+        cls.duration = get_audio_duration(filename)
         block_silence.clear()
 
     @classmethod
@@ -133,18 +129,21 @@ class MuteProcess:
             print("block_silence acquired by silence")
             audio_entry_mutex.release()
             print("audio_entry released by silence")
-            if not block_silence.is_set():
+            while not block_silence.is_set():
                 if subp is None or subp.poll() is not None:
                     subp = subprocess.Popen(args=streaming_cmd(cls.filename))
                     print("start mutesound")
                     block_silence_mutex.release()
                     print("block_silence released by silence")
-                    block_silence.wait()
-                    print("event wait completed")
+                    block_silence.wait(cls.duration)
+                    print("block_silence wait completed by silence")
                     subp.kill()
+                    block_silence_mutex.acquire()
+                    print("block_silence acquired by silence")
                 else:
-                    block_silence_mutex.release()
-                    print("!!!!block_silence released by silence")
+                    print("ERROR SILENCE")
+            block_silence_mutex.release()
+            print("block_silence released by silence")
             audio_thread_mutex.release()
             print("audio_thread released by silence")
 
@@ -256,6 +255,6 @@ def join_speech(speech, filename, saved_file_name=None):
 
 
 if __name__ == "__main__":
-    print(sys.platform)
+    MuteProcess.run()
     # join_speech("我是四年级学生森下下士。我们高年级学生是你们最好的老大哥！",os.path.join(file_path,"11 Times Square (Full Mix).mp3"))
     # joinVoice("output.wav", "03 Mind The Gaps (Full Mix).mp3")

@@ -13,10 +13,12 @@ import sqlalchemy.exc
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_, asc
 
-import database
-import util.thread_ctrl
+from . import *
+from ..util.thread_ctrl import *
+from ..util.schedulerUtil import *
+from ..util.hashUtil import *
+from ..util.web_requests import *
 from . import models, schemas
-from util import hashUtil, audio, web_requests, schedulerUtil
 
 
 def get_user(db: Session, user_id: int):
@@ -109,7 +111,7 @@ def create_file(db: Session, file: schemas.FileCreate):
         return None
     db_file = models.File(
         filename=file.filename,
-        checksum=hashUtil.get_md5_from_local_file(file.filename),
+        checksum=get_md5_from_local_file(file.filename),
         duration=audio.get_audio_duration(file.filename),
         user_upload=file.user_upload
     )
@@ -159,7 +161,7 @@ def create_arrangement(db: Session, arrangement: schemas.ArrangementCreate, auto
     audio_file_duration = datetime.timedelta(seconds=audio.get_audio_duration(arrangement.file))
     end_timestamp = arrangement.begin_timestamp + audio_file_duration
     time.sleep(random.random())
-    util.thread_ctrl.arrangement_db_access.acquire()
+    arrangement_db_access.acquire()
     if not db.query(models.Arrangement).filter(
             or_(
                 and_(
@@ -202,7 +204,7 @@ def create_arrangement(db: Session, arrangement: schemas.ArrangementCreate, auto
     db.refresh(db_arrangmement)
     db.refresh(file)
     time.sleep(random.random())
-    util.thread_ctrl.arrangement_db_access.release()
+    arrangement_db_access.release()
     print("Arrangement created: begins at "+db_arrangmement.begin_timestamp.strftime("%Y-%m-%d %H:%M:%S"))
     return db_arrangmement
 
@@ -220,9 +222,9 @@ def update_arrangement(db: Session):
 
 def accept_song_submit(song_submit_id):
     time.sleep(random.random())
-    util.thread_ctrl.accept_song_submit_mutex.acquire()
+    accept_song_submit_mutex.acquire()
     try:
-        db = database.get_db_subthread()
+        db = get_db_subthread()
     except Exception:
         print("Create db session error")
         raise SystemError()
@@ -239,11 +241,11 @@ def accept_song_submit(song_submit_id):
     if db_file is None:
         if song_submit.downloaded_song.filename == "Content Not Local":
             try:
-                song_info = web_requests.download_from_song_info(song_submit.downloaded_song)
+                song_info = download_from_song_info(song_submit.downloaded_song)
             except ValueError:
-                song_info = web_requests.get_song_info(song_submit.downloaded_song.shared_link,db)
+                song_info = get_song_info(song_submit.downloaded_song.shared_link,db)
                 try:
-                    song_info = web_requests.download_from_song_info(song_info)
+                    song_info = download_from_song_info(song_info)
                 except ValueError:
                     raise ValueError("Invalid sharedlink")
             song_submit.downloaded_song.filename = song_info.filename
@@ -277,7 +279,7 @@ def accept_song_submit(song_submit_id):
             songsubmit.expDatetime = datetime.datetime.utcnow() + datetime.timedelta(seconds=1)
         songsubmit.expDatetime = songsubmit.expDatetime.replace(tzinfo=pytz.timezone("UTC"))
         print("Calculated begin_timestamp")
-        util.thread_ctrl.arrangement_db_access.release()
+        arrangement_db_access.release()
         db_arrangement = create_arrangement(db, arrangement=schemas.ArrangementCreate(
             begin_timestamp=songsubmit.expDatetime,
             file=new_filename,
@@ -286,12 +288,12 @@ def accept_song_submit(song_submit_id):
             title=songsubmit.downloaded_song.title,
             abstract=songsubmit.message
         ),auto_fix=True)
-        util.thread_ctrl.arrangement_db_access.acquire()
+        arrangement_db_access.acquire()
     except Exception:
         traceback.print_exc()
         raise ValueError("Database error")
     print("Add arrangement completed")
-    schedulerUtil.sche.add_job(filename=os.path.join(audio.file_path, db_arrangement.file),
+    sche.add_job(filename=os.path.join(audio.file_path, db_arrangement.file),
                  timestamp=db_arrangement.begin_timestamp + datetime.timedelta(hours=8))
     print("Add schedule completed")
     songsubmit.is_proceeded = True
@@ -300,7 +302,7 @@ def accept_song_submit(song_submit_id):
     db.refresh(db_arrangement)
     time.sleep(0.1)
     time.sleep(random.random())
-    util.thread_ctrl.accept_song_submit_mutex.release()
+    accept_song_submit_mutex.release()
     print("Accept success")
 
 
@@ -353,7 +355,7 @@ def ensure_downloaded_song_by_shared_link(shared_link: str):
     ).first()
     if db_song is None:
         print("create thread")
-        t1 = threading.Thread(target=web_requests.get_song_info,args=[shared_link, db, True])
+        t1 = threading.Thread(target=get_song_info,args=[shared_link, db, True])
         t1.start()
     return
 
