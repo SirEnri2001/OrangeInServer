@@ -17,9 +17,8 @@ from xml.etree import ElementTree
 from pydub import AudioSegment
 import wave
 
-from util.config import file_path, streaming_cmd
-from util.thread_ctrl import *
-import util.schedulerUtil
+from config import file_path, streaming_cmd
+from thread_ctrl import *
 
 subp = None
 

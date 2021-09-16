@@ -1,6 +1,6 @@
 import hashlib
 import os
-from util.config import file_path
+from config import file_path
 
 
 def get_md5_from_local_file(filename):

@@ -85,7 +85,7 @@ class FilePlay(FileBase):
 
 class ArrangementBase(BaseModel):
     begin_timestamp: datetime.datetime
-    file: str
+    file: Optional[str]
     is_valid: bool
     user_added: int
     title: str
@@ -121,6 +121,7 @@ class DownloadedSong(BaseModel):
     shared_link: str
     download_link: str
 
+
 class DownloadedSongResponse(BaseModel):
     picture_link: str
     title: str
@@ -130,3 +131,9 @@ class DownloadedSongResponse(BaseModel):
 class RemotePlayCommand(BaseModel):
     url: str
     filename: str
+
+
+class CalendarEvent(BaseModel):
+    title: str
+    start: datetime.datetime
+    end: datetime.datetime

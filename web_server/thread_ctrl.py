@@ -1,7 +1,7 @@
 import threading
 
-# clear(): start MuteSound thread
-# set(): block MuteSound thread
+# clear(): let MuteSound thread wait
+# set(): stop MuteSound thread waiting
 block_silence = threading.Event()
 
 # set(): start MuteSound thread
