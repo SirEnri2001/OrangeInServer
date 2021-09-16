@@ -408,7 +408,7 @@ def send_file(filename: str, db: Session = Depends(get_db)):
 
 @app.post("/remote/play?{filename}")
 def remote_play_command(filename:str):
-    audio = util.audio.AudioProcess(os.path.join(util.config.file_path,cmd_info.filename))
+    audio = util.audio.AudioProcess(os.path.join(util.config.file_path,filename))
     threading.Thread(target=audio.run).start()
 
 
