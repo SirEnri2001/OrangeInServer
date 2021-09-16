@@ -304,9 +304,9 @@ class SongSubmit(Base):
                 try:
                     song_info = song_submit.downloaded_song.download_from_song_info(song_submit.downloaded_song)
                 except ValueError:
-                    song_info = web_requests.get_song_info(song_submit.downloaded_song.shared_link, db)
+                    song_info = DownloadedSong.get_by_shared_link(song_submit.downloaded_song.shared_link, db, True)
                     try:
-                        song_info = web_requests.download_from_song_info(song_info)
+                        song_info = song_info.download_from_song_info()
                     except ValueError:
                         raise ValueError("Invalid sharedlink")
                 song_submit.downloaded_song.filename = song_info.filename
@@ -367,8 +367,6 @@ class SongSubmit(Base):
         song_info = DownloadedSong.get_by_shared_link(song_submit.shared_link, db)
         if song_info is None:
             raise ValueError("Invalid Link")
-        db.commit()
-        db.refresh(song_info)
         db_song_submit = cls(**song_submit.dict())
         try:
             db_song_submit.id = uuid.uuid3(
@@ -378,9 +376,11 @@ class SongSubmit(Base):
             db_song_submit.fk_downloaded_song = song_info.key
             db.add(db_song_submit)
             db.commit()
+            db.refresh(song_info)
             db.refresh(db_song_submit)
         except IntegrityError:
             raise ValueError("Concurrent with current song submit")
+
 
     @classmethod
     def get_by_id(cls, db: Session, song_submit_id: str):
@@ -440,8 +440,7 @@ class DownloadedSong(Base):
                 db.add(db_song_info)
                 db.commit()
                 db.refresh(db_song_info)
-        else:
-            return db_song_info
+        return db_song_info
 
     def download_from_song_info(self):
         try:
@@ -542,6 +541,7 @@ def _get_song_info_qq(shared_link: str):
 
 
 def _get_song_info_netease(shared_link: str):
+    print(shared_link)
     md_info = netease.netease_single(shared_link)
     """ Download song from netease music """
     data = netease.NeteaseApi.encrypted_request(dict(ids=[md_info.id], br=32000))

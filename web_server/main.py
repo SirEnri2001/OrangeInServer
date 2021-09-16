@@ -55,15 +55,9 @@ app.mount("/static", StaticFiles(directory="./html/templates"), name="static")
 mute_process = audio.MuteProcess()
 
 
-
 @app.get("/")
 def read_root():
     return {"msg": "Please redirect to https://shallrest.space:8000/home"}
-
-
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: Optional[str] = None):
-    return {"item_id": item_id, "q": q}
 
 
 # 服务端创建用户（测试用功能）
@@ -234,6 +228,7 @@ async def submit_songs(request: Request):
 @app.get("/submit_songs/song_info/", response_model=schemas.DownloadedSongResponse, response_class=JSONResponse)
 async def get_song_info(shared_link: str, db: Session = Depends(get_db)):
     shared_link = parse.unquote(shared_link)
+    shared_link = "http" + shared_link.split("http")[1].split(' ')[0]
     t1 = threading.Thread(target=models.DownloadedSong.ensure_by_shared_link, args=[shared_link])
     t1.start()
     timeout = 60.0
