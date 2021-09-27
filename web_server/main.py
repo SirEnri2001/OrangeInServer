@@ -46,10 +46,10 @@ def localize(utctime):
     return localtime.strftime("%Y-%m-%d %H:%M:%S")
 
 
-env = Environment(loader=FileSystemLoader('./html/templates'), autoescape=True)
-template = Jinja2Templates('./html/templates')
+env = Environment(loader=FileSystemLoader('html_template/templates'), autoescape=True)
+template = Jinja2Templates('./html_template/templates')
 template.env.filters['localize'] = localize
-app.mount("/static", StaticFiles(directory="./html/templates"), name="static")
+app.mount("/static", StaticFiles(directory="./html_template/templates"), name="static")
 # app.mount("/audio", StaticFiles(directory="./audio"), name="static")
 
 mute_process = audio.MuteProcess()
@@ -100,12 +100,12 @@ async def login_cookie(login_id: Optional[str] = Cookie(None)):
     print(login_id)
     if login_id in login_rec and not login_rec[login_id] is None:
         html = ""
-        with open("html/login_success.html") as f:
+        with open("html_template/login_success.html") as f:
             html = f.read()
         return html
     else:
         html = ""
-        with open("html/login_failed.html") as f:
+        with open("html_template/login_failed.html") as f:
             html = f.read()
         return html
 

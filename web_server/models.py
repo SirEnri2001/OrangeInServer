@@ -11,7 +11,7 @@ import os
 import urllib.request
 import requests
 from urllib.error import HTTPError
-from music_dl.addons import netease
+from music_dl.addons import netease, qq
 from sqlalchemy import *
 from sqlalchemy.orm import relationship, Session
 from sqlalchemy.exc import IntegrityError

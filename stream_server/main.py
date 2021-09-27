@@ -36,10 +36,10 @@ def localize(utctime):
     return localtime.strftime("%Y-%m-%d %H:%M:%S")
 
 
-env = Environment(loader=FileSystemLoader('./html/templates'), autoescape=True)
-template = Jinja2Templates('./html/templates')
+env = Environment(loader=FileSystemLoader('./html_template/templates'), autoescape=True)
+template = Jinja2Templates('./html_template/templates')
 template.env.filters['localize'] = localize
-app.mount("/static", StaticFiles(directory="./html/templates"), name="static")
+app.mount("/static", StaticFiles(directory="./html_template/templates"), name="static")
 # app.mount("/audio", StaticFiles(directory="./audio"), name="static")
 
 mute_process = MuteProcess()
@@ -70,7 +70,7 @@ def read_item(item_id: int, q: Optional[str] = None):
 
 @app.get("/upload", response_class=HTMLResponse)
 async def file_upload(request: Request):
-    return template.TemplateResponse('file_upload_page.html', {
+    return template.TemplateResponse('file_upload_page.html_template', {
         "request": request
     })
 
