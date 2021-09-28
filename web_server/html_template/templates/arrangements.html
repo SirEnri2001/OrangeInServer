@@ -7,7 +7,7 @@
     <meta name="description" content="">
     <meta name="author" content="Dashboard">
     <meta name="keyword" content="Dashboard, Bootstrap, Admin, Template, Theme, Responsive, Fluid, Retina">
-    <title>arrangement - SSDUT Broadcasting</title>
+    <title>Arrangement - SSDUT Broadcasting</title>
 
     <!-- Favicons -->
     <link href="{{ url_for('static',path='img/favicon.png') }}" rel="icon">
@@ -316,6 +316,56 @@
     <section id="main-content">
         <section class="wrapper site-min-height">
             <h3><i class="fa fa-angle-right"></i> 播放安排</h3>
+            <button class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal">模态框</button><!--data-target="#myModal
+"执行弹窗的div的id-->
+            <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+                 aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                            <h4 class="modal-title">弹窗</h4><!--弹窗的标题-->
+                        </div>
+                        <div class="modal-body"><!--弹窗的内容-->
+                            <div class="row form-group">
+                                <label class="col-xs-6 col-sm-4 control-label">预计播放日期 (必填)</label>
+                                <div class="col-xs-6 col-sm-4">
+                                    <div data-date-format="yyyy-mm-dd" data-date="today"
+                                         class="input-append date dpSong">
+                                        <input type="text" size="16"
+                                               class="form-control" id="date_textbox">
+                                        <span class="input-group-btn add-on">
+                        <button class="btn btn-theme picker" type="button"><i class="fa fa-calendar"></i></button>
+                        </span>
+                                    </div>
+                                    <script>
+                                        $(function () {
+                                            $(".dpSong").datepicker();
+                                        });
+                                    </script>
+                                </div>
+                                <div class="col-sm-4"></div>
+                            </div>
+                            <div class="row form-group">
+                                <label class="col-xs-12 col-sm-4 control-label">预计播放时间 (必填)</label>
+                                <div class="col-xs-6 col-sm-4">
+                                    <div class="input-group bootstrap-timepicker">
+                                        <input type="text" class="form-control timepicker-24" id="time_textbox">
+                                        <span class="input-group-btn">
+                        <button class="btn btn-theme04" type="button"><i class="fa fa-clock-o"></i></button>
+                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4"></div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button><!--弹窗的尾部-->
+                            <button type="button" class="btn btn-primary">保存</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="row mt">
                 <div class="col-md-12">
                     <div class="form-panel">
@@ -452,7 +502,9 @@
                             </tr>
                             </thead>
                             <tbody>
+
                             {% if song_submit %}
+
                             {% for submit in song_submit %}
                             <tr id="{{submit.id}}">
                                 <td>
@@ -468,18 +520,18 @@
                                 <td class="hidden-md hidden-sm hidden-xs">{{submit.message}}</td>
                                 <td class="hidden-xs">{{submit.email}}</td>
                                 <td>
-                                    <button class="btn btn-success btn-xs accept"><i class="fa fa-check"></i></button>
+                                    <button class="btn btn-success btn-xs accept" data-toggle="modal" data-target="#myModal"><i class="fa fa-check"></i></button>
                                     <button class="btn btn-danger btn-xs reject"><i class="fa fa-trash-o "></i></button>
                                 </td>
                             </tr>
                             {% endfor %}
                             {% endif %}
                             </tbody>
-                            <script>
+                            <script>/*
                                 $(".accept").click(function () {
                                     var submit_id = $(this).parents("tr").attr('id')
-                                    $(this).prop ('disabled', true);
-                                    $(this).next().prop("disable",true);
+                                    $(this).prop('disabled', true);
+                                    $(this).next().prop("disable", true);
                                     $.ajax({
                                         url: "/submit_songs/accept",
                                         type: "POST",
@@ -492,11 +544,11 @@
 
                                         }
                                     });
-                                });
+                                });*/
                                 $(".reject").click(function () {
                                     var submit_id = $(this).parents("tr").attr('id')
-                                    $(this).prop ('disabled', true);
-                                    $(this).prev().prop("disable",true);
+                                    $(this).prop('disabled', true);
+                                    $(this).prev().prop("disable", true);
                                     $.ajax({
                                         url: "/submit_songs/reject",
                                         type: "POST",
@@ -621,6 +673,7 @@
         </div>
     </footer>
     <!--footer end-->
+
 </section>
 <!-- js placed at the end of the document so the pages load faster -->
 <script src="{{ url_for('static',path='lib/bootstrap/js/bootstrap.min.js') }}"></script>

@@ -268,8 +268,9 @@ class SongSubmit(Base):
 
     @classmethod
     def get(cls, db: Session, skip: int = 0, limit: int = 100):
-        song_submit = db.query(cls).filter(cls.is_proceeded is False).offset(skip).limit(
+        song_submit = db.query(cls).filter(cls.is_proceeded == False).offset(skip).limit(
             limit).all()
+        print(song_submit)
         return song_submit
 
     @classmethod
@@ -368,6 +369,7 @@ class SongSubmit(Base):
         if song_info is None:
             raise ValueError("Invalid Link")
         db_song_submit = cls(**song_submit.dict())
+        print("create song_submit instance")
         try:
             db_song_submit.id = uuid.uuid3(
                 namespace=uuid.NAMESPACE_DNS,
@@ -422,6 +424,7 @@ class DownloadedSong(Base):
             raise SystemError()
         t1 = threading.Thread(target=DownloadedSong.get_by_shared_link, args=[shared_link, db, True])
         t1.start()
+        t1.join()
         return
 
     @classmethod

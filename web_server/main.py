@@ -234,7 +234,6 @@ async def get_song_info(shared_link: str, db: Session = Depends(get_db)):
     timeout = 60.0
     await asyncio.sleep(random.random())
     while t1.is_alive() and timeout > 0.0:
-        print("waiting for thread")
         wait_time = random.random()
         timeout -= wait_time
         await asyncio.sleep(wait_time)
@@ -268,6 +267,7 @@ async def reject_song_submit(song_submit_id: str = Form(...), db: Session = Depe
 @app.post("/submit_songs")
 async def submit_songs_post(songsubmit: schemas.SongSubmit, db: Session = Depends(get_db)):
     songsubmit.shared_link = parse.unquote(songsubmit.shared_link)
+    songsubmit.shared_link = "http" + songsubmit.shared_link.split("http")[1].split(' ')[0]
     try:
         models.SongSubmit.create(db=db, song_submit=songsubmit)
     except ValueError as valerr:

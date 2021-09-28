@@ -19,6 +19,7 @@
     <link href="{{ url_for('static',path='lib/font-awesome/css/font-awesome.css') }}" rel="stylesheet"/>
     <!-- Custom styles for this template -->
     <link href="{{ url_for('static',path='css/style.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static',path='css/loader.css') }}" rel="stylesheet">
     <link href="{{ url_for('static',path='css/style-responsive.css') }}" rel="stylesheet">
 
     <script src="{{ url_for('static',path='lib/jquery/jquery.min.js') }}"></script>
@@ -129,13 +130,16 @@
                         </div>
                         <div class="alert alert-success" id="success_alert" style="display: none"><b>提交成功！</b>歌曲将在审核后播放.
                         </div>
-                        <div class="alert alert-warning" id="warning_alert" style="display: none"><b>请等待...</b> 服务器正在连接音频网站，请稍后...
+                        <div class="alert alert-warning" id="warning_alert" style="display: none;vertical-align: center">
+                            <b>请等待...</b> 服务器正在连接音频网站，请稍后...
+                            <div class="loader" style="display: inline-block;float: right">
+                            </div>
                         </div>
                         <div class="form-horizontal style-form">
                             <div class="form-group">
-                                <label class="col-sm-2 control-label">歌曲分享链接 (必填)</label>
+                                <label class="col-sm-2 control-label">歌曲链接 (必填)</label>
                                 <div class="col-sm-10">
-                                    <input type="text" class="form-control" id="raw-link">
+                                    <input type="text" class="form-control" id="raw-link" placeholder="分享链接或歌曲网址...">
                                     <span class="help-block"><!--点击 <strong><a
                                             href="{{ url_for('static',path='#') }}">观看视频</a></strong> 获取更多信息。-->仅支持<img
                                             src="{{ url_for('static',path='./img/qqmusic_img.png') }}" alt="">QQ音乐和<img
@@ -225,7 +229,7 @@
                                 }
                             </script>
                             <div class="form-group">
-                                <label class="col-sm-2 col-sm-2 control-label">名字 (选填)</label>
+                                <label class="col-sm-2 col-sm-2 control-label">姓名 (选填)</label>
                                 <div class="col-sm-10">
                                     <input type="text" class="form-control" id="nname">
                                 </div>
@@ -391,8 +395,8 @@
 <script type="text/javascript"
         src="{{ url_for('static',path='lib/bootstrap-timepicker/js/bootstrap-timepicker.js') }}"></script>
 <script>
-    $(document).load(function () {
-        $("#raw-link").text("");
+    $(document).ready(function () {
+        $("#raw-link").val("");
         if ($("#playOptions2:checked").val() !== undefined) {
             $("#select-date").css("display", "inherit");
             $("#select-time").css("display", "inherit");
